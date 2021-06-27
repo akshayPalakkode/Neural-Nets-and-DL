@@ -1,2 +1,2 @@
-# Neural-Nets-and-DL
+# Neural Networks and DL
 First course in Deep learning specialization by Deeplearning.ai
