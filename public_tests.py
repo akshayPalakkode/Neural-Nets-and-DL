@@ -1,240 +1,132 @@
 import numpy as np
-from test_utils import test
 
-        
-def basic_sigmoid_test(target):
-    x = 1
-    expected_output = 0.7310585786300049
-    test_cases = [
-        {
-            "name": "datatype_check",
-            "input": [x],
-            "expected": float,
-            "error": "Datatype mismatch."
-        },
-        {
-            "name": "equation_output_check",
-            "input": [x],
-            "expected": expected_output,
-            "error": "Wrong output."
-        }
-    ]
-    
-    test(test_cases, target)
          
 def sigmoid_test(target):
-    x = np.array([1, 2, 3])
-    expected_output = np.array([0.73105858,
-                                0.88079708,
-                                0.95257413])
-    test_cases = [
-        {
-            "name":"datatype_check",
-            "input": [x],
-            "expected": np.ndarray,
-            "error":"Datatype mismatch."
-        },
-        {
-            "name": "shape_check",
-            "input": [x],
-            "expected": expected_output,
-            "error": "Wrong shape."
-        },
-        {
-            "name": "equation_output_check",
-            "input": [x],
-            "expected": expected_output,
-            "error": "Wrong output."
-        }
-    ]
-    
-    test(test_cases, target)
+    x = np.array([0, 2])
+    output = target(x)
+    assert type(output) == np.ndarray, "Wrong type. Expected np.ndarray"
+    assert np.allclose(output, [0.5, 0.88079708]), f"Wrong value. {output} != [0.5, 0.88079708]"
+    output = target(1)
+    assert np.allclose(output, 0.7310585), f"Wrong value. {output} != 0.7310585"
+    print('\033[92mAll tests passed!')
     
             
         
-def sigmoid_derivative_test(target):
-    x = np.array([1, 2, 3])
-    expected_output = np.array([0.19661193,
-                                0.10499359,
-                                0.04517666])
-    test_cases = [
-        {
-            "name":"datatype_check",
-            "input": [x],
-            "expected": np.ndarray,
-            "error":"The function should return a numpy array."
-        },
-        {
-            "name": "shape_check",
-            "input": [x],
-            "expected": expected_output,
-            "error": "Wrong shape."
-        },
-        {
-            "name": "equation_output_check",
-            "input": [x],
-            "expected": expected_output,
-            "error": "Wrong output."
-        }
-    ]
-    
-    test(test_cases, target)
+def initialize_with_zeros_test(target):
+    dim = 3
+    w, b = target(dim)
+    assert type(b) == float, f"Wrong type for b. {type(b)} != float"
+    assert b == 0., "b must be 0.0"
+    assert type(w) == np.ndarray, f"Wrong type for w. {type(w)} != np.ndarray"
+    assert w.shape == (dim, 1), f"Wrong shape for w. {w.shape} != {(dim, 1)}"
+    assert np.allclose(w, [[0.], [0.], [0.]]), f"Wrong values for w. {w} != {[[0.], [0.], [0.]]}"
+    print('\033[92mAll tests passed!')
 
-def image2vector_test(target):
-    image = np.array([[[ 0.67826139,  0.29380381],
-                      [ 0.90714982,  0.52835647],
-                      [ 0.4215251 ,  0.45017551]],
+def propagate_test(target):
+    w, b, X, Y = np.array([[1.], [2.]]), 2., np.array([[1., 2., -1.], [3., 4., -3.2]]), np.array([[1, 0, 1]])
 
-                     [[ 0.92814219,  0.96677647],
-                      [ 0.85304703,  0.52351845],
-                      [ 0.19981397,  0.27417313]],
+    expected_dw = np.array([[0.99845601], [2.39507239]])
+    expected_db = np.float64(0.00145557)
+    expected_grads = {'dw': expected_dw,
+                      'db': expected_db}
+    expected_cost = np.array(5.80154531)
+    expected_output = (expected_grads, expected_cost)
+    
+    grads, cost = target( w, b, X, Y)
 
-                     [[ 0.60659855,  0.00533165],
-                      [ 0.10820313,  0.49978937],
-                      [ 0.34144279,  0.94630077]]])
-    
-    expected_output = np.array([[ 0.67826139],
-                                [ 0.29380381],
-                                [ 0.90714982],
-                                [ 0.52835647],
-                                [ 0.4215251 ],
-                                [ 0.45017551],
-                                [ 0.92814219],
-                                [ 0.96677647],
-                                [ 0.85304703],
-                                [ 0.52351845],
-                                [ 0.19981397],
-                                [ 0.27417313],
-                                [ 0.60659855],
-                                [ 0.00533165],
-                                [ 0.10820313],
-                                [ 0.49978937],
-                                [ 0.34144279],
-                                [ 0.94630077]])
-    test_cases = [
-        {
-            "name":"datatype_check",
-            "input": [image],
-            "expected": np.ndarray,
-            "error":"The function should return a numpy array."
-        },
-        {
-            "name": "shape_check",
-            "input": [image],
-            "expected": expected_output,
-            "error": "Wrong shape"
-        },
-        {
-            "name": "equation_output_check",
-            "input": [image],
-            "expected": expected_output,
-            "error": "Wrong output"
-        } 
-    ]
-    
-    test(test_cases, target)
+    assert type(grads['dw']) == np.ndarray, f"Wrong type for grads['dw']. {type(grads['dw'])} != np.ndarray"
+    assert grads['dw'].shape == w.shape, f"Wrong shape for grads['dw']. {grads['dw'].shape} != {w.shape}"
+    assert np.allclose(grads['dw'], expected_dw), f"Wrong values for grads['dw']. {grads['dw']} != {expected_dw}"
+    assert np.allclose(grads['db'], expected_db), f"Wrong values for grads['db']. {grads['db']} != {expected_db}"
+    assert np.allclose(cost, expected_cost), f"Wrong values for cost. {cost} != {expected_cost}"
+    print('\033[92mAll tests passed!')
 
-def normalizeRows_test(target):
-    x = np.array([[0, 3, 4],
-                  [1, 6, 4]])
-    expected_output = np.array([[ 0., 0.6, 0.8 ],
-                                [ 0.13736056, 0.82416338, 0.54944226]])
+def optimize_test(target):
+    w, b, X, Y = np.array([[1.], [2.]]), 2., np.array([[1., 2., -1.], [3., 4., -3.2]]), np.array([[1, 0, 1]])
+    expected_w = np.array([[-0.70916784], [-0.42390859]])
+    expected_b = np.float64(2.26891346)
+    expected_params = {"w": expected_w,
+                       "b": expected_b}
+   
+    expected_dw = np.array([[0.06188603], [-0.01407361]])
+    expected_db = np.float64(-0.04709353)
+    expected_grads = {"dw": expected_dw,
+                      "db": expected_db}
     
-    test_cases = [
-        {
-            "name":"datatype_check",
-            "input": [x],
-            "expected": np.ndarray,
-            "error":"The function should return a numpy array."
-        },
-        {
-            "name": "shape_check",
-            "input": [x],
-            "expected": expected_output,
-            "error": "Wrong shape"
-        },
-        {
-            "name": "equation_output_check",
-            "input": [x],
-            "expected": expected_output,
-            "error": "Wrong output"
-        } 
-    ]
+    expected_cost = [5.80154532, 0.31057104]
+    expected_output = (expected_params, expected_grads, expected_cost)
     
-    test(test_cases, target)       
+    params, grads, costs = target(w, b, X, Y, num_iterations=101, learning_rate=0.1, print_cost=False)
+    
+    assert type(costs) == list, "Wrong type for costs. It must be a list"
+    assert len(costs) == 2, f"Wrong length for costs. {len(costs)} != 2"
+    assert np.allclose(costs, expected_cost), f"Wrong values for costs. {costs} != {expected_cost}"
+    
+    assert type(grads['dw']) == np.ndarray, f"Wrong type for grads['dw']. {type(grads['dw'])} != np.ndarray"
+    assert grads['dw'].shape == w.shape, f"Wrong shape for grads['dw']. {grads['dw'].shape} != {w.shape}"
+    assert np.allclose(grads['dw'], expected_dw), f"Wrong values for grads['dw']. {grads['dw']} != {expected_dw}"
+    
+    assert np.allclose(grads['db'], expected_db), f"Wrong values for grads['db']. {grads['db']} != {expected_db}"
+    
+    assert type(params['w']) == np.ndarray, f"Wrong type for params['w']. {type(params['w'])} != np.ndarray"
+    assert params['w'].shape == w.shape, f"Wrong shape for params['w']. {params['w'].shape} != {w.shape}"
+    assert np.allclose(params['w'], expected_w), f"Wrong values for params['w']. {params['w']} != {expected_w}"
+    
+    assert np.allclose(params['b'], expected_b), f"Wrong values for params['b']. {params['b']} != {expected_b}"
+
+    
+    print('\033[92mAll tests passed!')   
         
-def softmax_test(target):
-    x = np.array([[9, 2, 5, 0, 0],
-                  [7, 5, 0, 0 ,0]])
-    expected_output = np.array([[ 9.80897665e-01, 8.94462891e-04,
-                                 1.79657674e-02, 1.21052389e-04,
-                                 1.21052389e-04],
-                                
-                                [ 8.78679856e-01, 1.18916387e-01,
-                                 8.01252314e-04, 8.01252314e-04,
-                                 8.01252314e-04]])
-    test_cases = [
-        {
-            "name":"datatype_check",
-            "input": [x],
-            "expected": np.ndarray,
-            "error":"The function should return a numpy array."
-        },
-        {
-            "name": "shape_check",
-            "input": [x],
-            "expected": expected_output,
-            "error": "Wrong shape"
-        },
-        {
-            "name": "equation_output_check",
-            "input": [x],
-            "expected": expected_output,
-            "error": "Wrong output"
-        } 
-    ]
+def predict_test(target):
+    w = np.array([[0.3], [0.5], [-0.2]])
+    b = -0.33333
+    X = np.array([[1., -0.3, 1.5],[2, 0, 1], [0, -1.5, 2]])
     
-    test(test_cases, target)
+    pred = target(w, b, X)
+    
+    assert type(pred) == np.ndarray, f"Wrong type for pred. {type(pred)} != np.ndarray"
+    assert pred.shape == (1, X.shape[1]), f"Wrong shape for pred. {pred.shape} != {(1, X.shape[1])}"
+    assert np.bitwise_not(np.allclose(pred, [[1., 1., 1]])), f"Perhaps you forget to add b in the calculation of A"
+    assert np.allclose(pred, [[1., 0., 1]]), f"Wrong values for pred. {pred} != {[[1., 0., 1.]]}"
+    
+    print('\033[92mAll tests passed!')
+    
+def model_test(target):
+    np.random.seed(0)
+    expected_output = {'costs': [np.array(0.69314718)],
+                     'Y_prediction_test': np.array([[1., 1., 1.]]),
+                     'Y_prediction_train': np.array([[1., 1., 1.]]),
+                     'w': np.array([[ 0.00194946],
+                            [-0.0005046 ],
+                            [ 0.00083111],
+                            [ 0.00143207]]),
+                     'b': np.float64(0.000831188)
+                      }
+    
+    dim, b, Y, X = 5, 3., np.array([1, 0, 1]).reshape(1, 3), np.random.randn(4, 3),
 
-def L1_test(target):
-    yhat = np.array([.9, 0.2, 0.1, .4, .9])
-    y = np.array([1, 0, 0, 1, 1])
-    expected_output = 1.1
-    test_cases = [
-        {
-            "name":"datatype_check",
-            "input": [yhat, y],
-            "expected": float,
-            "error":"The function should return a float."
-        },
-        {
-            "name": "equation_output_check",
-            "input": [yhat, y],
-            "expected": expected_output,
-            "error": "Wrong output"
-        } 
-    ]
+    x_test = X * 0.5
+    y_test = np.array([1, 0, 1])
     
-    test(test_cases, target)
+    d = target(X, Y, x_test, y_test, num_iterations=50, learning_rate=1e-4)
     
-def L2_test(target):
-    yhat = np.array([.9, 0.2, 0.1, .4, .9])
-    y = np.array([1, 0, 0, 1, 1])
-    expected_output = 0.43
+    assert type(d['costs']) == list, f"Wrong type for d['costs']. {type(d['costs'])} != list"
+    assert len(d['costs']) == 1, f"Wrong length for d['costs']. {len(d['costs'])} != 1"
+    assert np.allclose(d['costs'], expected_output['costs']), f"Wrong values for pred. {d['costs']} != {expected_output['costs']}"
     
-    test_cases = [
-        {
-            "name":"datatype_check",
-            "input": [yhat, y],
-            "expected": float,
-            "error":"The function should return a float."
-        },
-        {
-            "name": "equation_output_check",
-            "input": [yhat, y],
-            "expected": expected_output,
-            "error": "Wrong output"
-        } 
-    ]
+    assert type(d['w']) == np.ndarray, f"Wrong type for d['w']. {type(d['w'])} != np.ndarray"
+    assert d['w'].shape == (X.shape[0], 1), f"Wrong shape for d['w']. {d['w'].shape} != {(X.shape[0], 1)}"
+    assert np.allclose(d['w'], expected_output['w']), f"Wrong values for d['w']. {d['w']} != {expected_output['w']}"
     
-    test(test_cases, target)
+    assert np.allclose(d['b'], expected_output['b']), f"Wrong values for d['b']. {d['b']} != {expected_output['b']}"
+    
+    assert type(d['Y_prediction_test']) == np.ndarray, f"Wrong type for d['Y_prediction_test']. {type(d['Y_prediction_test'])} != np.ndarray"
+    assert d['Y_prediction_test'].shape == (1, X.shape[1]), f"Wrong shape for d['Y_prediction_test']. {d['Y_prediction_test'].shape} != {(1, X.shape[1])}"
+    assert np.allclose(d['Y_prediction_test'], expected_output['Y_prediction_test']), f"Wrong values for d['Y_prediction_test']. {d['Y_prediction_test']} != {expected_output['Y_prediction_test']}"
+    
+    assert type(d['Y_prediction_train']) == np.ndarray, f"Wrong type for d['Y_prediction_train']. {type(d['Y_prediction_train'])} != np.ndarray"
+    assert d['Y_prediction_train'].shape == (1, X.shape[1]), f"Wrong shape for d['Y_prediction_test']. {d['Y_prediction_train'].shape} != {(1, X.shape[1])}"
+    assert np.allclose(d['Y_prediction_train'], expected_output['Y_prediction_train']), f"Wrong values for d['Y_prediction_train']. {d['Y_prediction_train']} != {expected_output['Y_prediction_train']}"
+    
+    print('\033[92mAll tests passed!')
+    
